@@ -4,7 +4,8 @@ import {
   StyleSheet, 
   TextInput, 
   TouchableOpacity, 
-  Text 
+  Text,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,7 +13,8 @@ const CardLikesAndReplies = ({
   currentImageIndex, 
   images, 
   onReplySubmit,
-  caption
+  caption,
+  comments // Add comments prop
 }) => {
   const [replyText, setReplyText] = React.useState('');
   const [likes, setLikes] = React.useState(
@@ -45,6 +47,7 @@ const CardLikesAndReplies = ({
   };
 
   return (
+    <View>
     <View style={styles.bottomContainer}>
       {/* Caption */}
       {caption && (
@@ -73,7 +76,7 @@ const CardLikesAndReplies = ({
         <View style={styles.replyContainer}>
           <TextInput
             style={styles.replyInput}
-            placeholder={`Reply to this image...`}
+            placeholder={`Reply to this...`}
             placeholderTextColor="#aaa"
             value={replyText}
             onChangeText={setReplyText}
@@ -90,16 +93,45 @@ const CardLikesAndReplies = ({
         </View>
       </View>
     </View>
+
+    {/* Comment Thumbnails and Forward Button */}
+    {comments && (
+      <View style={styles.commentRow}>
+        <TouchableOpacity style={styles.commentPreview}>
+          <View style={styles.thumbnailStack}>
+            {comments.previewUsers.slice(0, 2).map((thumb, index) => (
+              <Image
+                key={`thumb-${index}`}
+                source={{ uri: thumb }}
+                style={[
+                  styles.thumbnail,
+                  index === 1 && styles.secondThumbnail
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={styles.commentCount}>{comments.count} comments</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.forwardButton}
+          onPress={() => console.log('Forward pressed')}
+        >
+          <Ionicons name="arrow-redo-outline" size={20} color="rgb(133, 133, 133)" />
+        </TouchableOpacity>
+      </View>
+    )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   bottomContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 35,
     left: 0,
     right: 0,
-    padding: 16,
+    padding: 10,
   },
   captionContainer: {
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -111,6 +143,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
   },
+  commentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 3,
+  },
+  commentPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  thumbnailStack: {
+    flexDirection: 'row',
+    marginRight: 10,
+  },
+  thumbnail: {
+    width: 25,
+    height: 25,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'white',
+    backgroundColor: '#ddd',
+  },
+  secondThumbnail: {
+    marginLeft: -15,
+    zIndex: -1,
+  },
+  commentCount: {
+    color: 'rgb(139, 139, 139)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  forwardButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    padding: 5,
+    borderRadius: 20,
+  },
   interactionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -119,10 +187,11 @@ const styles = StyleSheet.create({
   likeButton: {
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 20,
+    borderRadius: 50,
     padding: 8,
     flexDirection: 'row',
-    minWidth: 80,
+    height: 50,
+    width: 50,
     justifyContent: 'center',
   },
   likeCount: {
@@ -130,6 +199,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontWeight: 'bold',
     fontSize: 16,
+    display: 'none'
   },
   replyContainer: {
     flex: 1,

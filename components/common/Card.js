@@ -6,8 +6,8 @@ import {
   TouchableWithoutFeedback, 
   Image 
 } from 'react-native';
-import CardLikesAndReplies from './CardLikesAndReplies';
-import CardHeader from './CardHeader';
+import CardLikesAndReplies from '../features/social/CardLikesAndReplies';
+import CardHeader from '../common/CardHeader';
 
 const Card = ({ item, isActive }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -17,12 +17,10 @@ const Card = ({ item, isActive }) => {
 
   const handleFollowPress = () => {
     console.log('Follow button pressed');
-    // Add follow logic here
   };
 
   const handleMenuPress = () => {
     console.log('Menu button pressed');
-    // Add menu logic here
   };
 
   useEffect(() => {
@@ -86,7 +84,7 @@ const Card = ({ item, isActive }) => {
   };
 
   const handleReplySubmit = (imageIndex, replyText) => {
-    console.log(`Reply to image ${imageIndex + 1} (${captions[imageIndex]}): ${replyText}`);
+    console.log(`Reply to image ${imageIndex + 1}: ${replyText}`);
   };
 
   return (
@@ -137,11 +135,13 @@ const Card = ({ item, isActive }) => {
           images={item.images}
           onReplySubmit={handleReplySubmit}
           caption={item.images[currentImageIndex].caption}
+          comments={item.comments} // Pass comments data here
         />
       </View>
     </TouchableWithoutFeedback>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     width: '100%',
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     resizeMode: 'cover',
+    borderRadius: 10,
   },
   progressContainer: {
     position: 'absolute',

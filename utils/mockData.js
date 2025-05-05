@@ -1,4 +1,45 @@
 import { Dimensions } from 'react-native';
+
+export const shoppingData = [
+  {
+    id: 1,
+    itemImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlCZV9gJJPCNcoMJvkBm1dYDTRRUgClqpq4Q&s',
+    description: 'Vintage Camera - Excellent Condition',
+    price: 129.99,
+    sellerProfile: {
+      image: 'https://img.freepik.com/free-photo/black-woman-posing-with-colorful-powder_23-2149339784.jpg',
+      name: 'Mary Jane'
+    },
+    location: 'New York, NY',
+    comments: {
+      count: 24,
+      previewUsers: [
+        'https://randomuser.me/api/portraits/women/44.jpg',
+        'https://randomuser.me/api/portraits/women/68.jpg'
+      ]
+    }
+  },
+  {
+    id: 2,
+    itemImage: 'https://images.unsplash.com/photo-1592599457454-e6ace3370314?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YmxhY2slMjBwZW9wbGUlMjBpbiUyMGxvdmV8ZW58MHx8MHx8fDA%3D',
+    description: 'Handmade Leather Journal',
+    price: 45.50,
+    sellerProfile: {
+      image: 'https://images.pexels.com/photos/17691789/pexels-photo-17691789/free-photo-of-beautiful-girl.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+      name: 'Lucy'
+    },
+    location: 'Los Angeles, CA',
+    comments: {
+      count: 56,
+      previewUsers: [
+        'https://randomuser.me/api/portraits/women/44.jpg',
+        'https://randomuser.me/api/portraits/women/68.jpg'
+      ]
+    }
+  },
+  // Add more items as needed
+];
+
 export const data = [
     { 
       id: 1,
@@ -6,6 +47,13 @@ export const data = [
       profileName: 'Mary Jane',
       timestamp: '2h ago',
       label: '♫ Original Sound - Wanderlust',
+      comments: {
+        count: 24,
+        previewUsers: [
+          'https://randomuser.me/api/portraits/women/44.jpg',
+          'https://randomuser.me/api/portraits/women/68.jpg'
+        ]
+      },
       images: [
             { 
             uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlCZV9gJJPCNcoMJvkBm1dYDTRRUgClqpq4Q&s', 
@@ -30,6 +78,13 @@ export const data = [
       profileName: 'lucy',
       timestamp: '3h ago',
       label: 'In the mood for love',
+      comments: {
+        count: 56,
+        previewUsers: [
+          'https://randomuser.me/api/portraits/women/44.jpg',
+          'https://randomuser.me/api/portraits/women/68.jpg'
+        ]
+      },
       images: [
             { 
             uri: 'https://images.unsplash.com/photo-1592599457454-e6ace3370314?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YmxhY2slMjBwZW9wbGUlMjBpbiUyMGxvdmV8ZW58MHx8MHx8fDA%3D', 
@@ -54,6 +109,13 @@ export const data = [
       profileName: 'lucy',
       timestamp: '3h ago',
       label: 'In the mood for love',
+      comments: {
+        count: 98,
+        previewUsers: [
+          'https://randomuser.me/api/portraits/women/44.jpg',
+          'https://randomuser.me/api/portraits/women/68.jpg'
+        ]
+      },
       images: [
             { 
             uri: 'https://images.unsplash.com/photo-1592599457454-e6ace3370314?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YmxhY2slMjBwZW9wbGUlMjBpbiUyMGxvdmV8ZW58MHx8MHx8fDA%3D', 
