@@ -1,77 +1,116 @@
-import React from 'react';
-import { View, TouchableOpacity, Image, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TouchableOpacity, Image, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { fetchComments } from '../../../firebase/firebaseData';
 
-const CardComments = ({ comments, onForwardPress }) => {
-    if (!comments || !comments.previewUsers) return null; // Safety check
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.commentPreview}>
-        <View style={styles.thumbnailsStack}>
-          {comments.previewUsers.slice(0, 2).map((thumb, index) => (
-            <Image
-              key={`thumb-${index}`}
-              source={{ uri: thumb }}
-              style={[
-                styles.thumbnail,
-                index === 1 && styles.secondThumbnail
-              ]}
-            />
-          ))}
-        </View>
-        <Text style={styles.commentCount}>{comments.count} comments</Text>
-      </TouchableOpacity>
+const CardComments = ({ cardId, onCommentsPress }) => {
+  const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState(null);
+  
+  useEffect(() => {
+    const loadComments = async () => {
+      if (!cardId) return;
       
-      <TouchableOpacity 
-        style={styles.forwardButton}
-        onPress={onForwardPress}
-      >
-        <Ionicons name="arrow-forward" size={24} color="white" />
-      </TouchableOpacity>
-    </View>
+      try {
+        setLoading(true);
+        const commentsData = await fetchComments(cardId, 3); // Fetch just 3 for preview
+        
+        // Format comments for display
+        const formattedComments = {
+          count: commentsData.length,
+          data: commentsData,
+          previewUsers: commentsData
+            .filter(comment => comment.userProfileImage)
+            .map(comment => comment.userProfileImage)
+            .slice(0, 3)
+        };
+        
+        setComments(formattedComments);
+      } catch (error) {
+        console.error('Error loading comments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadComments();
+  }, [cardId]);
+  
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="small" color="#0095f6" />
+      </View>
+    );
+  }
+  
+  return (
+    <TouchableOpacity 
+      style={styles.container} 
+      onPress={onCommentsPress}
+      activeOpacity={0.7}
+    >
+      {(!comments || comments.count === 0) ? (
+        <Text style={styles.commentCount}>0 comments</Text>
+      ) : (
+        <View style={styles.commentContainer}>
+          <View style={styles.thumbnailsStack}>
+            {comments.previewUsers.length > 0 && comments.previewUsers.slice(0, 3).map((thumb, index) => (
+              <Image
+                key={`thumb-${index}`}
+                source={{ uri: thumb || 'https://via.placeholder.com/30' }}
+                style={[
+                  styles.thumbnail,
+                  index === 1 && { marginLeft: -10 },
+                  index === 2 && { marginLeft: -10 }
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={styles.commentCount}>{comments.count} {comments.count === 1 ? 'comment' : 'comments'}</Text>
+          <Ionicons name="chevron-forward" size={16} color="#8e8e8e" style={styles.icon} />
+        </View>
+      )}
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
+    padding: 12,
+    backgroundColor: 'green',
+    borderBottomWidth: 1,
+    borderBottomColor: '#efefef',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    zIndex: 100 // Ensure it's above other elements
+    justifyContent: 'flex-start',
+    bottom: 20,
+    zIndex: 20,
+    position: 'relative',
   },
-  commentPreview: {
+  commentContainer: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   thumbnailsStack: {
     flexDirection: 'row',
-    marginRight: 10,
-    height: 40
+    marginRight: 8,
   },
   thumbnail: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'white',
-    backgroundColor: '#ddd'
-  },
-  secondThumbnail: {
-    marginLeft: -15
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fff',
   },
   commentCount: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold'
+    fontSize: 14,
+    color: '#262626',
+    marginLeft: 4,
+    flex: 1,
   },
-  forwardButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    padding: 8,
-    borderRadius: 20
+  icon: {
+    marginLeft: 'auto',
   }
 });
 

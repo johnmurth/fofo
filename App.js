@@ -1,35 +1,37 @@
-// App.js
-// This file needs to share constants between components
-import React, {useRef, useState} from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, {useRef, useState, useEffect} from 'react';
+import { StatusBar, View, StyleSheet, ActivityIndicator, SafeAreaView, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import CardSlider from './components/common/CardSlider';
 import BottomSheet from './components/layout/BottomSheet';
 import Header from './components/layout/Header';
-import SearchAndFilter from './components//features/shopping/SearchAndFilter';
-import ShoppingList from './components/features/shopping/ShoppingList'; 
-import { shoppingData } from './utils/mockData';
+import SearchAndFilter from './components/features/shopping/SearchAndFilter';
+import ShoppingList from './components/features/shopping/ShoppingList';
+import PostScreen from './components/common/PostScreen';
+import useAuth from './firebase/auth';
 
-// Define shared constants in a common place that both components can access
+// Create stack navigator
+const Stack = createStackNavigator();
+
+// Define shared constants
 export const BOTTOM_SHEET_MIN_HEIGHT = 100;
 
-export default function App() {
+// Main App Component
+function MainApp({ navigation }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const sheetRef = useRef(null);
 
-  const handleAddToCart = (itemId) => {
-    console.log('Added to cart:', itemId);
-    const item = shoppingData.find(i => i.id === itemId);
-    alert(`Added ${item.description} to cart!`);
+  const handleAddToCart = (item) => {
+    console.log('Item added to cart:', item);
   };
 
-  const handleSendMessage = (itemId, message) => {
-    console.log(`Message to ${itemId}:`, message);
-    // Implement your messaging logic here
+  const handleSendMessage = (item) => {
+    console.log('Send message to:', item);
   };
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header onMenuPress={() => setIsSheetOpen(true)} navigation={navigation} />
       <CardSlider />
       <BottomSheet 
         ref={sheetRef}
@@ -40,16 +42,68 @@ export default function App() {
           onFilterPress={() => console.log('Filter pressed')}
           searchPlaceholder="Search locations..."
         />
-        
-
-          <View style={styles.sheetContent}>
-            <ShoppingList 
-              onAddToCart={handleAddToCart}
-              onSendMessage={handleSendMessage}
-            />
-          </View>
+        <View style={styles.sheetContent}>
+          <ShoppingList 
+            onAddToCart={handleAddToCart}
+            onSendMessage={handleSendMessage}
+          />
+        </View>
       </BottomSheet>
     </View>
+  );
+}
+
+// Root App Component
+export default function App() {
+  const { user, loading: authLoading } = useAuth();
+  const [initializing, setInitializing] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        if (authLoading) return;
+        setInitializing(false);
+      } catch (err) {
+        console.error('Error initializing app:', err);
+        setError('Failed to initialize app. Please try again.');
+        setInitializing(false);
+      }
+    };
+
+    initializeApp();
+  }, [authLoading, user]);
+
+  if (authLoading || initializing) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <StatusBar barStyle="light-content" />
+        <ActivityIndicator size="large" color="#ffffff" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.errorContainer}>
+        <StatusBar barStyle="light-content" />
+        <Text style={styles.errorText}>{error}</Text>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false
+        }}
+      >
+        <Stack.Screen name="Main" component={MainApp} />
+        <Stack.Screen name="PostScreen" component={PostScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
@@ -60,5 +114,26 @@ const styles = StyleSheet.create({
   },
   sheetContent: {
     paddingBottom: 30, // Extra padding for bottom safe area
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 10,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+    padding: 20,
+  },
+  errorText: {
+    color: '#ff3040',
+    textAlign: 'center',
   },
 });

@@ -9,8 +9,11 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Entypo, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native'; // Add this import
 
-const Header = ({ onMenuPress, onAddPress }) => {
+const Header = ({ onMenuPress}) => { // Removed onAddPress since we'll handle it internally
+  const navigation = useNavigation(); // Get navigation object
+
   return (
     <View style={styles.wrapper}>
       <SafeAreaView style={styles.safeArea}>
@@ -23,8 +26,11 @@ const Header = ({ onMenuPress, onAddPress }) => {
           /> 
 
           {/* Center Add Icon */}
-          <TouchableOpacity style={styles.addButton} onPress={onAddPress}>
-            <Entypo name="plus" size={28} color="#000" />
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('PostScreen')} // Use navigation directly
+            style={styles.addButton} // Added style for the button
+          >
+            <Ionicons name="add" size={30} color="black" />
           </TouchableOpacity>
 
           {/* Right Menu Icon */}
@@ -40,11 +46,8 @@ const Header = ({ onMenuPress, onAddPress }) => {
 const styles = StyleSheet.create({
   wrapper: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    backgroundColor: '#fff',
-    marginVertical: 10
   },
   safeArea: {
-    backgroundColor: '#fff',
   },
   container: {
     flexDirection: 'row',
@@ -65,6 +68,7 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',   
+    marginRight: 15, // Added for consistent spacing
   },
   menuButton: {
     width: 30,

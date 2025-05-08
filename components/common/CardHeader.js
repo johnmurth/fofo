@@ -1,39 +1,84 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { db, auth } from '../../firebase/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
-const CardHeader = ({ 
-  profileImage, 
-  profileName, 
-  timestamp, 
-  label, 
+const CardHeader = ({
+  profileImage,
+  profileName,
+  timestamp,
+  label,
   onFollowPress,
-  onMenuPress 
+  onMenuPress,
+  userId // Add userId prop to check if user is already followed
 }) => {
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  // Check if the current user is already following this user
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (!auth.currentUser || !userId) return;
+      
+      try {
+        const currentUserRef = doc(db, 'users', auth.currentUser.uid);
+        const userDoc = await getDoc(currentUserRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.following && userData.following.includes(userId)) {
+            setIsFollowing(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking follow status:', error);
+      }
+    };
+    
+    checkFollowStatus();
+  }, [userId]);
+
+  const handleFollowPress = () => {
+    setIsFollowing(true); // Optimistic UI update
+    onFollowPress();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
         <View style={styles.profileImageWrapper}>
-          <Image 
-            source={{ uri: profileImage }} 
+          <Image
+            source={{ uri: profileImage }}
             style={styles.profileImage}
           />
-          <TouchableOpacity 
-            style={styles.followButton}
-            onPress={onFollowPress}
+          <TouchableOpacity
+            style={[
+              styles.followButton,
+              isFollowing && styles.followingButton
+            ]}
+            onPress={handleFollowPress}
           >
-            <Ionicons name="add" size={20} color="#fff" />
+            <Ionicons 
+              name={isFollowing ? "checkmark" : "add"} 
+              size={20} 
+              color="#fff" 
+            />
           </TouchableOpacity>
         </View>
-        
+       
         <View style={styles.profileInfo}>
           <Text style={styles.profileName}>{profileName}</Text>
           <Text style={styles.label}>{label}</Text>
         </View>
       </View>
-
       <View style={styles.rightSection}>
-        <Text style={styles.timestamp}>{timestamp}</Text>
+        <Text style={styles.timestamp}>
+          {timestamp && typeof timestamp === 'string' 
+            ? timestamp 
+            : timestamp instanceof Date 
+              ? timestamp.toLocaleString() 
+              : 'Just now'}
+        </Text>
         <TouchableOpacity onPress={onMenuPress}>
           <Ionicons name="ellipsis-vertical" size={20} color="#fff" />
         </TouchableOpacity>
@@ -41,6 +86,7 @@ const CardHeader = ({
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
