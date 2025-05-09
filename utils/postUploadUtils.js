@@ -249,7 +249,7 @@ export const uploadPost = async ({
       textPost: postMode === 'text' ? textPost : '', // Store text content in dedicated field
       caption: '', // Keep caption field empty for text posts
       timestamp: serverTimestamp(),
-      label: '',
+      label: userData?.label || 'No label',
       postType: postMode === 'text' ? 'text' : 'media',
     });
     

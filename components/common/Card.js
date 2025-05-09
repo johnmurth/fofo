@@ -310,9 +310,14 @@ const Card = ({ item, isActive }) => {
 };
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    justifyContent: 'space-between',
+    height: '100%',
+  },
   container: {
-    backgroundColor: 'red',
     position: 'relative',
+    borderRadius: 10,
+    flex: 1,
   },
   image: {
     width: '100%',
@@ -352,11 +357,12 @@ const styles = StyleSheet.create({
   },
   textPostContent: {
     padding: 16,
-    backgroundColor: 'yellow',
-    borderRadius: 20,
-    height: '100%',
+    backgroundColor: 'rgba(46, 104, 212, 0.4)',
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 80,
+    flex: 1,
   },
   textPostText: {
     fontSize: 16,

@@ -31,6 +31,7 @@ function MainApp({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent />
       <Header onMenuPress={() => setIsSheetOpen(true)} navigation={navigation} />
       <CardSlider />
       <BottomSheet 

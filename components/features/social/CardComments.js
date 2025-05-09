@@ -78,15 +78,9 @@ const CardComments = ({ cardId, onCommentsPress }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 12,
-    backgroundColor: 'green',
-    borderBottomWidth: 1,
-    borderBottomColor: '#efefef',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    bottom: 20,
-    zIndex: 20,
-    position: 'relative',
   },
   commentContainer: {
     flexDirection: 'row',
@@ -105,7 +99,7 @@ const styles = StyleSheet.create({
   },
   commentCount: {
     fontSize: 14,
-    color: '#262626',
+    color: 'rgb(133, 133, 133)',
     marginLeft: 4,
     flex: 1,
   },

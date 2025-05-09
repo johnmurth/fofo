@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',   
-    marginRight: 15, // Added for consistent spacing
   },
   menuButton: {
     width: 30,

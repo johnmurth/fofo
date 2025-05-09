@@ -121,8 +121,8 @@ const CardLikesAndReplies = ({
           >
             <Ionicons
               name={currentIsLiked ? "heart" : "heart-outline"}
-              size={28}
-              color={currentIsLiked ? "#ff3040" : "#fff"}
+              size={25}
+              color={currentIsLiked ? "#ff3040" : "rgb(133, 133, 133)"}
             />
             <Text style={styles.likeCount}>{likeCount}</Text>
           </TouchableOpacity>
@@ -132,7 +132,7 @@ const CardLikesAndReplies = ({
             <TextInput
               style={styles.replyInput}
               placeholder="Reply to this..."
-              placeholderTextColor="#aaa"
+              placeholderTextColor="rgb(133, 133, 133)"
               value={replyText}
               onChangeText={setReplyText}
               onSubmitEditing={handleReplySubmit}
@@ -148,36 +148,6 @@ const CardLikesAndReplies = ({
           </View>
         </View>
       </View>
-      
-      {/* Comment Thumbnails and Forward Button */}
-      {comments && comments.count > 0 && comments.previewUsers && Array.isArray(comments.previewUsers) && (
-        <View style={styles.commentRow}>
-          <TouchableOpacity style={styles.commentPreview}>
-            <View style={styles.thumbnailStack}>
-              {comments.previewUsers.slice(0, 2).map((thumb, index) => (
-                thumb && (
-                  <Image
-                    key={`thumb-${index}`}
-                    source={{ uri: thumb }}
-                    style={[
-                      styles.thumbnail,
-                      index === 1 && styles.secondThumbnail
-                    ]}
-                  />
-                )
-              ))}
-            </View>
-            <Text style={styles.commentCount}>{comments.count} comments</Text>
-          </TouchableOpacity>
-         
-          <TouchableOpacity
-            style={styles.forwardButton}
-            onPress={() => console.log('Forward pressed')}
-          >
-            <Ionicons name="arrow-redo-outline" size={20} color="rgb(133, 133, 133)" />
-          </TouchableOpacity>
-        </View>
-      )}
     </View>
   );
 };
@@ -185,6 +155,9 @@ const CardLikesAndReplies = ({
 const styles = StyleSheet.create({
   bottomContainer: {
     padding: 12,
+    position: 'absolute',
+    width: '100%',
+    bottom: 0,
   },
   captionContainer: {
     marginBottom: 8,
@@ -199,64 +172,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   likeButton: {
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 35,
     marginRight: 10,
+    width: 40,
+    height: 40,
   },
   likeCount: {
-    color: '#fff',
+    color: 'rgb(133, 133, 133)',
     marginLeft: 4,
     fontSize: 14,
+    display: 'none'
   },
   replyContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderRadius: 20,
     paddingHorizontal: 12,
+    height: 40,
   },
   replyInput: {
     flex: 1,
-    color: '#fff',
+    color: 'rgb(0, 0, 0)',
     padding: 8,
     fontSize: 14,
   },
   sendButton: {
     padding: 6,
-  },
-  commentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-  },
-  commentPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  thumbnailStack: {
-    flexDirection: 'row',
-    marginRight: 8,
-    width: 40,
-    height: 24,
-    position: 'relative',
-  },
-  thumbnail: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#000',
-  },
-  secondThumbnail: {
-    position: 'absolute',
-    left: 16,
-  },
-  commentCount: {
-    color: 'rgb(133, 133, 133)',
-    fontSize: 12,
   },
   forwardButton: {
     padding: 8,

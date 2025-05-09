@@ -4,6 +4,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { db, auth } from '../../firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 
+const formatRelativeTime = (timestamp) => {
+  const now = new Date();
+  const time = timestamp instanceof Date ? timestamp : timestamp?.toDate?.(); // Firestore timestamp compatibility
+  if (!time) return 'Just now';
+
+  const diffMs = now - time;
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSeconds < 60) return `${diffSeconds}s`;
+  if (diffMinutes < 60) return `${diffMinutes}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  return `${diffDays}d`;
+};
+
 const CardHeader = ({
   profileImage,
   profileName,
@@ -60,27 +77,25 @@ const CardHeader = ({
           >
             <Ionicons 
               name={isFollowing ? "checkmark" : "add"} 
-              size={20} 
+              size={16} 
               color="#fff" 
             />
           </TouchableOpacity>
         </View>
        
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>{profileName}</Text>
+          <View style={styles.profTimeCaption}>
+            <Text style={styles.profileName}>{profileName}</Text>
+            <Text style={styles.timestamp}>
+              {formatRelativeTime(timestamp)}
+            </Text>
+          </View>
           <Text style={styles.label}>{label}</Text>
         </View>
       </View>
       <View style={styles.rightSection}>
-        <Text style={styles.timestamp}>
-          {timestamp && typeof timestamp === 'string' 
-            ? timestamp 
-            : timestamp instanceof Date 
-              ? timestamp.toLocaleString() 
-              : 'Just now'}
-        </Text>
         <TouchableOpacity onPress={onMenuPress}>
-          <Ionicons name="ellipsis-vertical" size={20} color="#fff" />
+          <Ionicons name="ellipsis-horizontal" size={20} color="rgb(133, 133, 133)" />
         </TouchableOpacity>
       </View>
     </View>
@@ -91,7 +106,7 @@ const CardHeader = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 40,
+    top: 20,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -113,12 +128,12 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: 'rgb(184, 184, 184)',
   },
   followButton: {
     position: 'absolute',
-    bottom: -5,
-    right: -5,
+    bottom: 0,
+    right: -2,
     backgroundColor: '#ff3040',
     width: 20,
     height: 20,
@@ -126,18 +141,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: 'rgb(184, 184, 184)',
   },
   profileInfo: {
     justifyContent: 'center',
   },
+  profTimeCaption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   profileName: {
-    color: '#fff',
+    color: 'rgb(0, 0, 0)',
     fontWeight: 'bold',
     fontSize: 14,
   },
   label: {
-    color: '#fff',
+    color: 'rgb(133, 133, 133)',
     fontSize: 12,
     marginTop: 2,
   },
@@ -146,9 +166,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timestamp: {
-    color: '#fff',
+    color: 'rgb(133, 133, 133)',
     fontSize: 12,
-    marginRight: 15,
+    marginLeft: 5,
   },
 });
 

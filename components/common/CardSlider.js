@@ -40,7 +40,7 @@ const CardSlider = () => {
  
   // Calculate the card height to extend to where the bottom sheet starts
   // Leave some padding at the bottom for better visual appearance
-  const CARD_HEIGHT = height - BOTTOM_SHEET_MIN_HEIGHT - 150; // 20px padding
+  const CARD_HEIGHT = height - BOTTOM_SHEET_MIN_HEIGHT - 80; // 20px padding
 
   if (loading) {
     return (
@@ -77,7 +77,7 @@ const CardSlider = () => {
           });
           const opacity = scrollX.interpolate({
             inputRange,
-            outputRange: [0.7, 1, 0.7],
+            outputRange: [0.5, 1, 0.5],
             extrapolate: 'clamp',
           });
           const translateY = scrollX.interpolate({
@@ -112,10 +112,7 @@ const CardSlider = () => {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgb(255, 255, 255)',
-    marginTop: 10
+    marginTop: 10,
   },
   scrollViewContent: {
     alignItems: 'center',
@@ -125,7 +122,7 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     // height is now set dynamically in the component
     borderRadius: 10,
-    overflow: 'hidden',
+    justifyContent: 'space-between',
   },
 });
 
