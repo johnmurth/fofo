@@ -24,8 +24,8 @@ import {
 
 // Constants that were previously in mockData.js
 const { width } = Dimensions.get('window');
-export const CARD_WIDTH = width - 20; // 10px padding on each side
-export const SPACING = 10;
+export const CARD_WIDTH = width - 30; // 10px padding on each side
+export const SPACING = 5;
 export const SNAP_INTERVAL = CARD_WIDTH + SPACING;
 
 // Add these new functions to the existing file

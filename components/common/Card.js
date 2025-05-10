@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 80,
+    marginTop: 0,
     flex: 1,
   },
   textPostText: {

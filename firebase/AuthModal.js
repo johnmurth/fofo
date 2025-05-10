@@ -1,5 +1,6 @@
-// firebase/AuthModal.js
-import React, { useState } from 'react';
+// COMPLETE REVISED AUTHMODAL.JS
+
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -24,8 +25,36 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Use the auth hook instead of directly accessing Firebase auth
-  const { signIn, signUp, error: authError } = useAuth();
+  // Use the auth hook
+  const { signIn, signUp, user, error: authError } = useAuth();
+  
+  // Clear error when switching between login/signup
+  useEffect(() => {
+    setError('');
+  }, [isLogin]);
+  
+  // Update error from auth hook
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+      setLoading(false);
+    }
+  }, [authError]);
+  
+  // Handle successfully authenticated user
+  useEffect(() => {
+    if (user && visible && onAuthSuccess) {
+      console.log("User detected in AuthModal, calling onAuthSuccess");
+      // Small delay to ensure Firebase has completed its internal processes
+      const timer = setTimeout(() => {
+        setLoading(false);
+        onAuthSuccess(user);
+        handleClose();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, visible]);
   
   const resetForm = () => {
     setEmail('');
@@ -39,78 +68,79 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
     resetForm();
     onClose();
   };
-  
-  const navigateToAuthScreen = () => {
-    handleClose();
-    // Small delay to make the transition feel smoother
-    setTimeout(() => {
-      navigation.navigate('Auth', { initialMode: isLogin ? 'login' : 'register' });
-    }, 300);
-  };
 
-  const handleAuth = async () => {
+  const validateForm = () => {
     // Form validation
     if (!email) {
       setError('Email is required');
-      return;
+      return false;
     }
     
     if (!password) {
       setError('Password is required');
-      return;
+      return false;
     }
     
     if (!isLogin && !displayName) {
       setError('Display name is required');
+      return false;
+    }
+    
+    // Additional validation
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+    
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleAuth = async () => {
+    // Clear previous errors
+    setError('');
+    
+    // Validate the form
+    if (!validateForm()) {
       return;
     }
     
-    setError('');
     setLoading(true);
     
     try {
-      let success;
-      let userData;
+      console.log(`Attempting to ${isLogin ? 'sign in' : 'sign up'} with email: ${email}`);
+      
+      let success = false;
       
       if (isLogin) {
         // Use the signIn function from useAuth
         success = await signIn(email, password);
-        if (success) {
-          userData = { email }; // Basic user data
-        }
+        console.log("Sign in result:", success);
       } else {
         // Use the signUp function from useAuth
         success = await signUp(email, password, displayName);
-        if (success) {
-          userData = { email, displayName }; // Basic user data
-        }
+        console.log("Sign up result:", success);
       }
       
-      // Check for errors from the useAuth hook
-      if (authError) {
-        setError(authError);
-        setLoading(false);
-        return;
-      }
-      
-      // Successfully authenticated
-      if (success) {
-        setLoading(false);
-        
-        // Call onAuthSuccess callback if provided
-        if (onAuthSuccess) {
-          onAuthSuccess(userData);
-        }
-        
-        handleClose();
-      } else {
-        setError('Authentication failed. Please try again.');
+      // If auth failed but no error was thrown, set a generic error
+      if (!success && !error && !authError) {
+        setError('Authentication failed for unknown reason. Please try again.');
         setLoading(false);
       }
       
-    } catch (error) {
+      // Note: We don't need to manually call onAuthSuccess here
+      // The useEffect hook will handle that when the user state updates
+      
+    } catch (err) {
+      console.error("Authentication error in handleAuth:", err);
+      setError(`Authentication error: ${err.message}`);
       setLoading(false);
-      setError('Authentication failed: ' + error.message);
     }
   };
 
@@ -153,6 +183,7 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
                     value={displayName}
                     onChangeText={setDisplayName}
                     autoCapitalize="words"
+                    editable={!loading}
                   />
                 )}
                 
@@ -164,6 +195,7 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!loading}
                 />
                 
                 <TextInput
@@ -172,6 +204,7 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
+                  editable={!loading}
                 />
                 
                 <TouchableOpacity
@@ -197,15 +230,7 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
                     {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
                   </Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.fullScreenButton} 
-                  onPress={navigateToAuthScreen}
-                >
-                  <Text style={styles.fullScreenText}>
-                    Go to full authentication screen
-                  </Text>
-                </TouchableOpacity>
+              
               </View>
             </KeyboardAvoidingView>
           </TouchableWithoutFeedback>
@@ -215,7 +240,9 @@ const AuthModal = ({ visible, onClose, navigation, onAuthSuccess = null }) => {
   );
 };
 
+// Add your existing styles here
 const styles = StyleSheet.create({
+  // Copy your existing styles from AuthModal.js
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -223,18 +250,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   keyboardView: {
-    width: '90%',
-    maxWidth: 400,
+    width: '100%',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    width: '90%',
+    maxWidth: 400,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -245,62 +269,46 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
   },
   closeButton: {
     padding: 5,
   },
   messageText: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 20,
+    marginBottom: 15,
+    color: '#666',
   },
   errorText: {
-    color: '#e74c3c',
-    marginBottom: 15,
+    color: 'red',
+    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 5,
-    padding: 12,
+    padding: 10,
     marginBottom: 15,
-    fontSize: 16,
   },
   authButton: {
-    backgroundColor: '#0095f6',
-    paddingVertical: 12,
+    backgroundColor: '#007AFF',
     borderRadius: 5,
+    padding: 12,
     alignItems: 'center',
-    marginTop: 5,
+    marginBottom: 10,
   },
   disabledButton: {
-    backgroundColor: '#b2dffc',
+    backgroundColor: '#AACFFF',
   },
   buttonText: {
-    color: 'white',
+    color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
   },
   switchModeButton: {
-    marginTop: 20,
-    alignItems: 'center',
+    padding: 10,
   },
   switchText: {
-    color: '#0095f6',
-    fontSize: 15,
+    color: '#007AFF',
+    textAlign: 'center',
   },
-  fullScreenButton: {
-    marginTop: 20,
-    padding: 10,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  fullScreenText: {
-    color: '#666',
-    fontSize: 14,
-  }
 });
 
 export default AuthModal;

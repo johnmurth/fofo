@@ -17,7 +17,7 @@ import PostScreenHeader from './PostScreenHeader';
 import EmptyState from './EmptyState';
 import TextPostForm from './TextPostForm';
 import MediaList from './MediaList';
-import { uploadPost } from '../../utils/postUploadUtils';
+import { uploadPost } from '../../utils/postUploadService';
 import useAuth from '../../firebase/auth'; // Import the useAuth hook
 
 // Ignore specific warnings related to Expo Go media library limitations
