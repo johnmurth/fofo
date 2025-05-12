@@ -32,7 +32,6 @@ const ShoppingList = ({ onAddToCart, onSendMessage }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgb(238, 238, 238)',
     height: '100%',
     paddingTop: 15,
     borderRadius: 10

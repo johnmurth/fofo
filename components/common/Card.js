@@ -9,15 +9,13 @@ import {
 } from 'react-native';
 import CardLikesAndReplies from '../features/social/CardLikesAndReplies';
 import CardHeader from '../common/CardHeader';
-import CardComments from '../features/social/CardComments'; // Import the new component
+import CardComments from '../features/social/CardComments'; // Using bottom sheet approach
+import CommentTrigger from '../features/social/CommentTrigger'; // Import the CommentTrigger
 import { addReply, followUser } from '../../firebase/firebaseData';
 import { auth } from '../../firebase/firebaseConfig';
-import { useNavigation } from '@react-navigation/native'; // Import navigation hook
 
 const Card = ({ item, isActive }) => {
-  const navigation = useNavigation(); // Get navigation object
-  
-  // Check if this is a text-only post - updated logic to check both postType and textPost
+  // Check if this is a text-only post
   const isTextPost = item.postType === 'text' || 
                     (item.textPost && item.textPost.trim() !== '') ||
                     (!item.images || item.images.length === 0);
@@ -176,14 +174,6 @@ const Card = ({ item, isActive }) => {
     }
   };
   
-  // Navigation handler for comments
-  const handleCommentsPress = () => {
-    navigation.navigate('ParentNavigatorName', { 
-      screen: 'CommentScreen', 
-      params: { cardId: item.id } 
-    });
-  };
-  
   // If error or invalid data, show error component
   if (error) {
     return (
@@ -193,6 +183,14 @@ const Card = ({ item, isActive }) => {
     );
   }
   
+  // Reference to track if the component is mounted
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  
   // Render a text-only post
   if (isTextPost) {
     return (
@@ -200,8 +198,10 @@ const Card = ({ item, isActive }) => {
         <View
           style={styles.container}
           onLayout={(event) => {
-            const { width } = event.nativeEvent.layout;
-            setCardWidth(width);
+            if (isMounted.current) {
+              const { width } = event.nativeEvent.layout;
+              setCardWidth(width);
+            }
           }}
         >
           <CardHeader
@@ -227,11 +227,8 @@ const Card = ({ item, isActive }) => {
           />
         </View>
         
-        {/* Comments section outside the card */}
-        <CardComments 
-          cardId={item.id}
-          onCommentsPress={handleCommentsPress}
-        />
+        {/* Comments section using bottom sheet (no navigation prop needed) */}
+        <CommentTrigger cardId={item.id} />
       </View>
     );
   }
@@ -247,8 +244,10 @@ const Card = ({ item, isActive }) => {
         <View
           style={styles.container}
           onLayout={(event) => {
-            const { width } = event.nativeEvent.layout;
-            setCardWidth(width);
+            if (isMounted.current) {
+              const { width } = event.nativeEvent.layout;
+              setCardWidth(width);
+            }
           }}
         >
           <Image
@@ -300,11 +299,8 @@ const Card = ({ item, isActive }) => {
         </View>
       </TouchableWithoutFeedback>
       
-      {/* Comments section outside the card */}
-      <CardComments 
-        cardId={item.id}
-        onCommentsPress={handleCommentsPress}
-      />
+      {/* Comment trigger - this replaces the previous direct inclusion of CardComments */}
+      <CommentTrigger cardId={item.id} />
     </View>
   );
 };
@@ -323,6 +319,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderRadius: 10,
   },
   progressContainer: {
     flexDirection: 'row',

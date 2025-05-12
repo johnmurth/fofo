@@ -95,7 +95,7 @@ const CardHeader = ({
       </View>
       <View style={styles.rightSection}>
         <TouchableOpacity onPress={onMenuPress}>
-          <Ionicons name="ellipsis-horizontal" size={20} color="rgb(133, 133, 133)" />
+          <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255, 255, 255, 0.6)" />
         </TouchableOpacity>
       </View>
     </View>
@@ -152,12 +152,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   profileName: {
-    color: 'rgb(0, 0, 0)',
+    color: 'rgb(255, 255, 255)',
     fontWeight: 'bold',
     fontSize: 14,
   },
   label: {
-    color: 'rgb(133, 133, 133)',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
     marginTop: 2,
   },
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timestamp: {
-    color: 'rgb(133, 133, 133)',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 12,
     marginLeft: 5,
   },

@@ -8,7 +8,11 @@ import Header from './components/layout/Header';
 import SearchAndFilter from './components/features/shopping/SearchAndFilter';
 import ShoppingList from './components/features/shopping/ShoppingList';
 import PostScreen from './components/common/PostScreen';
+import CardComments from './components/features/social/CardComments'; // Import CardComments
 import useAuth from './firebase/auth';
+
+// Create a context for comments functionality
+export const CommentsContext = React.createContext(null);
 
 // Create stack navigator
 const Stack = createStackNavigator();
@@ -19,38 +23,71 @@ export const BOTTOM_SHEET_MIN_HEIGHT = 100;
 // Main App Component
 function MainApp({ navigation }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
+  const [activeCardId, setActiveCardId] = useState(null);
   const sheetRef = useRef(null);
-
+  
   const handleAddToCart = (item) => {
     console.log('Item added to cart:', item);
   };
-
+  
   const handleSendMessage = (item) => {
     console.log('Send message to:', item);
   };
-
+  
+  // Function to open comments for a specific card
+  const openComments = (cardId) => {
+    setActiveCardId(cardId);
+    setIsCommentsModalOpen(true);
+  };
+  
+  // Function to close comments
+  const closeComments = () => {
+    setIsCommentsModalOpen(false);
+    setActiveCardId(null);
+  };
+  
+  // Create comments context value
+  const commentsContextValue = {
+    openComments,
+    closeComments
+  };
+  
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent />
-      <Header onMenuPress={() => setIsSheetOpen(true)} navigation={navigation} />
-      <CardSlider />
-      <BottomSheet 
-        ref={sheetRef}
-        onClose={() => setIsSheetOpen(false)}
-      >
-        <SearchAndFilter 
-          onSearch={(query) => console.log('Searching for:', query)}
-          onFilterPress={() => console.log('Filter pressed')}
-          searchPlaceholder="Search locations..."
-        />
-        <View style={styles.sheetContent}>
-          <ShoppingList 
-            onAddToCart={handleAddToCart}
-            onSendMessage={handleSendMessage}
+    <CommentsContext.Provider value={commentsContextValue}>
+      <View style={styles.container}>
+        <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent />
+        <Header onMenuPress={() => setIsSheetOpen(true)} navigation={navigation} />
+        <CardSlider />
+        
+        {/* Bottom sheet for shopping/filters */}
+        <BottomSheet
+          ref={sheetRef}
+          onClose={() => setIsSheetOpen(false)}
+        >
+          <SearchAndFilter
+            onSearch={(query) => console.log('Searching for:', query)}
+            onFilterPress={() => console.log('Filter pressed')}
+            searchPlaceholder="Search locations..."
           />
-        </View>
-      </BottomSheet>
-    </View>
+          <View style={styles.sheetContent}>
+            <ShoppingList
+              onAddToCart={handleAddToCart}
+              onSendMessage={handleSendMessage}
+            />
+          </View>
+        </BottomSheet>
+        
+        {/* Render CardComments conditionally */}
+        {isCommentsModalOpen && activeCardId && (
+          <CardComments 
+            cardId={activeCardId} 
+            isVisible={isCommentsModalOpen}
+            onClose={closeComments}
+          />
+        )}
+      </View>
+    </CommentsContext.Provider>
   );
 }
 
@@ -59,7 +96,7 @@ export default function App() {
   const { user, loading: authLoading } = useAuth();
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState(null);
-
+  
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -71,10 +108,9 @@ export default function App() {
         setInitializing(false);
       }
     };
-
     initializeApp();
   }, [authLoading, user]);
-
+  
   if (authLoading || initializing) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -84,7 +120,7 @@ export default function App() {
       </SafeAreaView>
     );
   }
-
+  
   if (error) {
     return (
       <SafeAreaView style={styles.errorContainer}>
@@ -93,7 +129,7 @@ export default function App() {
       </SafeAreaView>
     );
   }
-
+  
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -111,30 +147,33 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative',
-  },
-  sheetContent: {
-    paddingBottom: 30, // Extra padding for bottom safe area
+    backgroundColor: 'white',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#232323',
   },
   loadingText: {
-    color: '#fff',
     marginTop: 10,
+    color: '#ffffff',
+    fontSize: 16,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#ff3b30',
     padding: 20,
   },
   errorText: {
-    color: '#ff3040',
+    color: '#ffffff',
+    fontSize: 16,
     textAlign: 'center',
+  },
+  sheetContent: {
+    flex: 1,
+    paddingTop: 10,
   },
 });

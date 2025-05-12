@@ -1,4 +1,4 @@
-// hooks/useAuth.js - Enhanced version
+// useAuth.js 
 import { useState, useEffect } from 'react';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
@@ -8,6 +8,7 @@ const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [validationInProgress, setValidationInProgress] = useState(false);
   const auth = getAuth();
   const db = getFirestore();
   
@@ -60,10 +61,89 @@ const useAuth = () => {
     };
   }, [auth]);
   
+  // Validate credentials before attempting sign in
+  const validateCredentials = (email, password) => {
+    // Clear any previous errors
+    setError(null);
+    
+    // Basic email validation
+    if (!email || email.trim() === '') {
+      setError('Email is required');
+      return false;
+    }
+    
+    // Very basic email format validation
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      setError('Invalid email format');
+      return false;
+    }
+    
+    // Password validation
+    if (!password || password.trim() === '') {
+      setError('Password is required');
+      return false;
+    }
+    
+    return true;
+  };
+  
+  // Validate sign up data before attempting registration
+  const validateSignUpData = (email, password, displayName) => {
+    // Clear any previous errors
+    setError(null);
+    
+    // Validate email
+    if (!email || email.trim() === '') {
+      setError('Email is required');
+      return false;
+    }
+    
+    // Basic email format validation
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      setError('Invalid email format');
+      return false;
+    }
+    
+    // Validate display name
+    if (!displayName || displayName.trim() === '') {
+      setError('Display name is required');
+      return false;
+    }
+    
+    // Validate password
+    if (!password || password.trim() === '') {
+      setError('Password is required');
+      return false;
+    }
+    
+    // Password strength requirements
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+    
+    return true;
+  };
+  
   const signIn = async (email, password) => {
     console.log("Attempting to sign in user:", email);
+    
+    // Prevent multiple concurrent sign-in attempts
+    if (validationInProgress) {
+      console.log("Validation already in progress, skipping");
+      return false;
+    }
+    
+    // Validate inputs first
+    if (!validateCredentials(email, password)) {
+      console.log("Sign in validation failed");
+      return false;
+    }
+    
+    setValidationInProgress(true);
     setLoading(true);
-    setError(null);
     
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -72,7 +152,6 @@ const useAuth = () => {
       return true;
     } catch (error) {
       console.error("Sign in error:", error);
-      setLoading(false);
       
       let errorMessage = 'Sign in failed';
       
@@ -88,22 +167,31 @@ const useAuth = () => {
       
       setError(errorMessage);
       return false;
+    } finally {
+      setLoading(false);
+      setValidationInProgress(false);
     }
   };
   
   const signUp = async (email, password, displayName) => {
     console.log("Attempting to create user:", email);
+    
+    // Prevent multiple concurrent sign-up attempts
+    if (validationInProgress) {
+      console.log("Validation already in progress, skipping");
+      return false;
+    }
+    
+    // Validate inputs first - this is critical to prevent premature submission
+    if (!validateSignUpData(email, password, displayName)) {
+      console.log("Sign up validation failed");
+      return false;
+    }
+    
+    setValidationInProgress(true);
     setLoading(true);
-    setError(null);
     
     try {
-      // Validate password length
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters');
-        setLoading(false);
-        return false;
-      }
-      
       // Create user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User created successfully:", userCredential.user.uid);
@@ -133,7 +221,6 @@ const useAuth = () => {
       return true;
     } catch (error) {
       console.error("Sign up error:", error);
-      setLoading(false);
       
       let errorMessage = 'Sign up failed';
       
@@ -149,6 +236,9 @@ const useAuth = () => {
       
       setError(errorMessage);
       return false;
+    } finally {
+      setLoading(false);
+      setValidationInProgress(false);
     }
   };
   
@@ -169,6 +259,11 @@ const useAuth = () => {
     }
   };
 
+  // Clear current error
+  const clearError = () => {
+    setError(null);
+  };
+
   // Debugging function
   const checkAuthStatus = () => {
     const currentUser = auth.currentUser;
@@ -183,7 +278,8 @@ const useAuth = () => {
     signIn,
     signUp,
     logOut,
-    checkAuthStatus
+    checkAuthStatus,
+    clearError
   };
 };
 

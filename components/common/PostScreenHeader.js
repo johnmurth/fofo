@@ -1,4 +1,4 @@
-// components/PostScreenHeader.js - Key parts fixed
+// PostScreenHeader.js
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -34,9 +34,10 @@ const PostScreenHeader = ({
   const [currentUser, setCurrentUser] = useState(user);
   const [authInProgress, setAuthInProgress] = useState(false);
   const authCheckCompleted = useRef(false);
+  const lastActionTimestamp = useRef(0); // For debounce
   
   // Use our auth hook
-  const { user: authUser, checkAuthStatus } = useAuth();
+  const { user: authUser, checkAuthStatus, error: authError } = useAuth();
   
   // Update currentUser when authUser changes
   useEffect(() => {
@@ -48,6 +49,14 @@ const PostScreenHeader = ({
     }
   }, [authUser]);
   
+  // When auth error changes, disable submission
+  useEffect(() => {
+    if (authError) {
+      console.log("[PostScreenHeader] Auth error detected:", authError);
+      setIsPostButtonEnabled(false);
+    }
+  }, [authError]);
+  
   // Check if content is available for posting
   const hasContent = () => {
     const textCondition = postMode === 'text' && textPost.trim().length > 0;
@@ -57,8 +66,14 @@ const PostScreenHeader = ({
 
   // Check if post button should be enabled
   useEffect(() => {
-    setIsPostButtonEnabled(hasContent() && !isUploading && !isCheckingAuth);
-  }, [postMode, textPost, selectedMedia, isUploading, isCheckingAuth]);
+    // Only enable button if content exists, not uploading, auth check complete, and no auth errors
+    const shouldEnable = hasContent() && !isUploading && !isCheckingAuth && !authError;
+    setIsPostButtonEnabled(shouldEnable);
+    
+    if (!shouldEnable && (isUploading || isCheckingAuth)) {
+      console.log("[PostScreenHeader] Post button disabled: uploading=", isUploading, "checkingAuth=", isCheckingAuth);
+    }
+  }, [postMode, textPost, selectedMedia, isUploading, isCheckingAuth, authError]);
 
   // Initialize Firebase Auth listener when component mounts
   useEffect(() => {
@@ -108,8 +123,23 @@ const PostScreenHeader = ({
 
   // Safely process authentication and post
   const processAuthAndPost = async (userToValidate) => {
+    // Prevent rapid multiple submissions
+    const now = Date.now();
+    if (now - lastActionTimestamp.current < 1000) { // 1 second debounce
+      console.log("[PostScreenHeader] Debouncing rapid submission");
+      return;
+    }
+    lastActionTimestamp.current = now;
+    
     if (authInProgress) {
       console.log("[PostScreenHeader] Auth already in progress, ignoring request");
+      return;
+    }
+    
+    // Check for auth errors first
+    if (authError) {
+      console.log("[PostScreenHeader] Auth error present, cannot proceed:", authError);
+      Alert.alert("Authentication Error", authError);
       return;
     }
     
@@ -120,6 +150,8 @@ const PostScreenHeader = ({
       if (!userToValidate) {
         console.log("[PostScreenHeader] No user to validate, showing auth modal");
         setShowAuthModal(true);
+        setAuthInProgress(false);
+        setIsCheckingAuth(false);
         return;
       }
       
@@ -172,11 +204,18 @@ const PostScreenHeader = ({
     }
   };
 
-  // Handle post button press with debounce to prevent multiple clicks
+  // Handle post button press with improved validation
   const handlePostButtonPress = async () => {
+    // Enhanced validation check before proceeding
     if (!isPostButtonEnabled || authInProgress) {
       if (!hasContent()) {
         Alert.alert('Cannot Post', 'Please add text or media content before posting.');
+      }
+      if (authError) {
+        Alert.alert('Authentication Error', authError);
+      }
+      if (authInProgress) {
+        console.log("[PostScreenHeader] Authentication already in progress");
       }
       return;
     }
@@ -204,7 +243,7 @@ const PostScreenHeader = ({
     processAuthAndPost(userToProcess);
   };
 
-  // Handle successful authentication from modal
+  // Handle successful authentication from modal with validation
   const handleAuthSuccess = async (authenticatedUser) => {
     // Close the modal first
     setShowAuthModal(false);
@@ -216,6 +255,13 @@ const PostScreenHeader = ({
     
     if (!authenticatedUser) {
       console.error("[PostScreenHeader] No authenticated user received");
+      return;
+    }
+    
+    // Check for auth errors before proceeding
+    if (authError) {
+      console.log("[PostScreenHeader] Auth error present, cannot proceed:", authError);
+      Alert.alert("Authentication Error", authError);
       return;
     }
     
@@ -275,10 +321,11 @@ const PostScreenHeader = ({
           <ActivityIndicator size="small" color="#3498db" style={styles.authIndicator} />
         )}
       
-        {/* User status indicator - green dot if logged in */}
+        {/* User status indicator - green dot if logged in, red if error */}
         <View style={[
           styles.userStatusDot,
-          currentUser ? styles.userLoggedIn : styles.userLoggedOut
+          currentUser && !authError ? styles.userLoggedIn : 
+          authError ? styles.userAuthError : styles.userLoggedOut
         ]} />
         
         <TouchableOpacity
@@ -321,10 +368,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#ddd',
     backgroundColor: '#fff'
   },
   backButton: {
@@ -333,7 +379,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#222',
     flex: 1,
     textAlign: 'center'
   },
@@ -341,8 +386,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
+  postButton: {
+    backgroundColor: '#3498db',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4
+  },
+  postButtonText: {
+    color: '#fff',
+    fontWeight: '600'
+  },
+  disabledButton: {
+    backgroundColor: '#b2d8f5'
+  },
+  disabledButtonText: {
+    color: '#f0f0f0'
+  },
   authIndicator: {
-    marginRight: 8
+    marginRight: 10
   },
   userStatusDot: {
     width: 8,
@@ -351,35 +412,13 @@ const styles = StyleSheet.create({
     marginRight: 8
   },
   userLoggedIn: {
-    backgroundColor: '#2ecc71' // Green when logged in
+    backgroundColor: '#2ecc71' // Green for logged in
   },
   userLoggedOut: {
-    backgroundColor: '#e74c3c' // Red when logged out
+    backgroundColor: '#e74c3c' // Red for logged out
   },
-  debugButton: {
-    padding: 8,
-    marginRight: 8
-  },
-  postButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#3498db',
-    borderRadius: 4,
-    minWidth: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 36 // Fixed height to prevent layout shift
-  },
-  postButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16
-  },
-  disabledButton: {
-    backgroundColor: '#ccc'
-  },
-  disabledButtonText: {
-    color: '#888'
+  userAuthError: {
+    backgroundColor: '#e74c3c' // Red for auth error
   }
 });
 

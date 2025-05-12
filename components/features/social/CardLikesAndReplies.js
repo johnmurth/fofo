@@ -122,7 +122,7 @@ const CardLikesAndReplies = ({
             <Ionicons
               name={currentIsLiked ? "heart" : "heart-outline"}
               size={25}
-              color={currentIsLiked ? "#ff3040" : "rgb(133, 133, 133)"}
+              color={currentIsLiked ? "#ff3040" : "rgba(255, 255, 255, 0.7)"}
             />
             <Text style={styles.likeCount}>{likeCount}</Text>
           </TouchableOpacity>
@@ -132,7 +132,7 @@ const CardLikesAndReplies = ({
             <TextInput
               style={styles.replyInput}
               placeholder="Reply to this..."
-              placeholderTextColor="rgb(133, 133, 133)"
+              placeholderTextColor="rgba(255, 255, 255, 0.7)"
               value={replyText}
               onChangeText={setReplyText}
               onSubmitEditing={handleReplySubmit}
@@ -161,10 +161,13 @@ const styles = StyleSheet.create({
   },
   captionContainer: {
     marginBottom: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 8,
   },
   captionText: {
     color: '#fff',
     fontSize: 14,
+    lineHeight: 20,
   },
   interactionContainer: {
     flexDirection: 'row',
@@ -174,14 +177,14 @@ const styles = StyleSheet.create({
   likeButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 35,
     marginRight: 10,
     width: 40,
     height: 40,
   },
   likeCount: {
-    color: 'rgb(133, 133, 133)',
+    color: 'rgb(219, 219, 219)',
     marginLeft: 4,
     fontSize: 14,
     display: 'none'
@@ -190,7 +193,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
     paddingHorizontal: 12,
     height: 40,
