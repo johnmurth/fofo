@@ -9,12 +9,12 @@ import { getStorage } from "firebase/storage";
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDbPHhOu776l5tp8qvXRJRZ7QY_R-DJKNA",
-  authDomain: "fofo-4c356.firebaseapp.com",
-  projectId: "fofo-4c356",
-  storageBucket: "fofo-4c356.firebasestorage.app",
-  messagingSenderId: "207618174282",
-  appId: "1:207618174282:web:c3996314ce7c38ef3aa5b3"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: ".firebasestorage.app",
+  messagingSenderId: "",
+  appId: ""
 };
 
 // Initialize Firebase App (singleton pattern)
@@ -41,6 +41,6 @@ try {
 
 // Initialize other services
 const db = getFirestore(app);
-const storage = getStorage(app, "gs://fofo-4c356.firebasestorage.app");
+const storage = getStorage(app, "gs://.firebasestorage.app");
 
 export { auth, db, storage };
