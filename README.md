@@ -36,5 +36,8 @@ What I'm improving:
 - State management refactor
 - Skeleton loading states
 - Optimized Firebase queries
+- ❌ Messy commits → ✅ Structured git workflow
+- ❌ Buggy features → ✅ Robust implementations  
+- ❌ UI inconsistencies → ✅ Design system adoption
 
 Live Demo: https://play.google.com/store/apps/details?id=com.loopsell.app&pcampaignid=web_share
